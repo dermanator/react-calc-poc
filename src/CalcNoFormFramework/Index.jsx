@@ -58,16 +58,16 @@ export const CalcFormNoFramework = () => {
             {data.items.length > 0 && data.items.map((item, i) => (
               <tr key={item.itemId}>
                 <td>
-                  <InputField name={`items[${i}].itemName`} value={data.itemName} onChange={handleDataChange} />
+                  <InputField name={`items[${i}].itemName`} value={item.itemName} onChange={handleDataChange} />
                 </td>
                 <td>
-                  <InputField name={`items[${i}].quantity`} value={data.quantity} onChange={handleDataChange} />
+                  <InputField name={`items[${i}].quantity`} value={item.quantity} onChange={handleDataChange} />
                 </td>
                 <td>
-                  <InputField name={`items[${i}].unitPrice`} value={data.itemName} onChange={handleDataChange} />
+                  <InputField name={`items[${i}].unitPrice`} value={item.unitPrice} onChange={handleDataChange} />
                 </td>
                 <td>
-                  <InputField name={`items[${i}].extendedPrice`} value={data.extendedPrice} readonly/>
+                  <InputField name={`items[${i}].extendedPrice`} value={item.extendedPrice} readonly/>
                 </td>
               </tr>
             ))}
