@@ -1,6 +1,6 @@
 import './App.css';
 import {Container, Row, Col, Card} from 'react-bootstrap';
-import { CalcFormNoFramework } from './CalcFormNoFramework';
+import { CalcFormNoFramework } from './CalcNoFormFramework/Index';
 
 function App() {
   return (
