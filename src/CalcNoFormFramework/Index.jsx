@@ -1,129 +1,135 @@
 
-import { Form, Table, Button, Container, Col, Row } from 'react-bootstrap';
-import React, { useState, useCallback } from 'react';
-import { set } from 'lodash';
+import { Form, Table, Button, Container, Col, Row, FormControl } from 'react-bootstrap';
+import React, { useCallback, useReducer, useState } from 'react';
 import { InputField, TotalField } from './Fields';
+import { reducer, initialData } from './calculations';
 
 export const CalcFormNoFramework = () => {
-  const [data, setData] = useState({ items: [], subTotal: 0, taxes: 0, shipping: 0, total: 0 });
-
-  //  Could probably use a second set of eyes to see if it could be done cleaner
-  const createNewDataFromOld = (oldData, event) => {
-    // set(oldData, event.target.name, event.target.value);
-    // return {...oldData};
-
-    const newData = { ...oldData, items: oldData.items.map(item => ({ ...item })) };
-
-    //  Update the new value
-    set(newData, event.target.name, event.target.value);
-
-    //  Calculate extended price for each item
-    newData.items = newData.items.map(item => ({ ...item, extendedPrice: Number(item.quantity) * Number(item.unitPrice) }));
-
-    //  Calculate sub total
-    newData.subTotal = newData.items.reduce((total, item) => total + item.extendedPrice, 0);
-
-    //  Calculate total
-    newData.total = Number(newData.subTotal) + Number(newData.taxes) + Number(newData.shipping);
-    return newData;
-  }
-
-  //  I don't think either one of these does much to reduce re-renders.  I think I need to use the useReducerHook instead.
-  const handleDataChange = useCallback(event => {
-    setData(oldData => createNewDataFromOld(oldData, event));
-  }, []);
-
-  const handleDataChange2 = useCallback(event => {
-    setData(createNewDataFromOld(data, event));
-  }, [data]);
+  const [data, dispatch] = useReducer(reducer, initialData);
+  const [submitData, setSubmitData] = useState(null);
 
   const handleAddItem = useCallback(() => {
-    setData(oldData => ({ ...oldData, items: [...oldData.items, { itemId: oldData.items.length + 1, itemName: "", quantity: 0, unitPrice: 0, extendedPrice: 0 } ]}));
+    dispatch({ type: "ITEM_ADD", numItems: 10 });
   }, []);
 
+  const handleReset = () => {
+    setSubmitData(null);
+    dispatch({ type: "RESET" });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSubmitData(data);
+  };
+
   return (
-    <React.Fragment>
-      <Form>
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>Item Name</th>
-              <th>Quantity</th>
-              <th>Unit Price</th>
-              <th>Extended Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.items.length < 1 && <tr><td colspan="4">No Items</td></tr>}
-            {data.items.length > 0 && data.items.map((item, i) => (
-              <tr key={item.itemId}>
-                <td>
-                  <InputField name={`items[${i}].itemName`} value={item.itemName} onChange={handleDataChange} />
-                </td>
-                <td>
-                  <InputField name={`items[${i}].quantity`} value={item.quantity} onChange={handleDataChange} />
-                </td>
-                <td>
-                  <InputField name={`items[${i}].unitPrice`} value={item.unitPrice} onChange={handleDataChange} />
-                </td>
-                <td>
-                  <InputField name={`items[${i}].extendedPrice`} value={item.extendedPrice} readonly/>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr>
-              <th colspan="4">
-                <Button className="float-end" onClick={handleAddItem}>Add Item</Button>
-              </th>
-            </tr>
-          </tfoot>
-        </Table>
-        <Container className="p-0">
-          {/* Sub Total */}
-          <Row className="mb-1">
-            <Col md={{ span: 3, offset: 5 }} className="text-end">
-              <Form.Label column>Sub Total:</Form.Label>
-            </Col>
-            <Col md={{ span: 4 }}>
-              <TotalField name="subTotal" value={data.subTotal} readOnly />
-            </Col>
-          </Row>
+    <Form>
+      <Container>
+        <Row>
+          <Col>
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>Item Name</th>
+                  <th>Quantity</th>
+                  <th>Unit Price</th>
+                  <th>Extended Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.items.length < 1 && <tr><td colSpan="4">No Items</td></tr>}
+                {data.items.length > 0 && data.items.map((item, i) => (
+                  <tr key={item.itemId}>
+                    <td>
+                      <InputField itemId={item.itemId} name={`itemName`} value={item.itemName} dispatch={dispatch} />
+                    </td>
+                    <td>
+                      <InputField itemId={item.itemId} name={`quantity`} value={item.quantity} dispatch={dispatch} />
+                    </td>
+                    <td>
+                      <InputField itemId={item.itemId} name={`unitPrice`} value={item.unitPrice} dispatch={dispatch} />
+                    </td>
+                    <td>
+                      <InputField itemId={item.itemId} name={`extendedPrice`} value={item.extendedPrice} readOnly />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
 
-          {/* Taxes */}
-          <Row className="mb-1">
-            <Col md={{ span: 3, offset: 5 }} className="text-end">
-              <Form.Label column>Taxes:</Form.Label>
-            </Col>
-            <Col md={{ span: 4 }}>
-              <TotalField name="taxes" value={data.taxes} onChange={handleDataChange} />
-            </Col>
-          </Row>
+          </Col>
+          <Col md="auto">
+            <Container className="p-0">
+              {/* Total Items */}
+              <Row className="mb-1">
+                <Col md={{ span: 4 }} className="text-end">
+                  <Form.Label column>Total Items:</Form.Label>
+                </Col>
+                <Col md={{ span: 8 }}>
+                  <FormControl className="text-end" name="totalItems" value={data.items.length} readOnly />
+                </Col>
+              </Row>
 
-          {/* Shipping */}
-          <Row className="mb-1">
-            <Col md={{ span: 3, offset: 5 }} className="text-end">
-              <Form.Label column>Shipping:</Form.Label>
-            </Col>
-            <Col md={{ span: 4 }}>
-              <TotalField name="shipping" value={data.shipping} onChange={handleDataChange} />
-            </Col>
-          </Row>
+              {/* Sub Total */}
+              <Row className="mb-1">
+                <Col md={{ span: 4 }} className="text-end">
+                  <Form.Label column>Sub Total:</Form.Label>
+                </Col>
+                <Col md={{ span: 8 }}>
+                  <TotalField name="subTotal" value={data.subTotal} readOnly />
+                </Col>
+              </Row>
 
-          {/* Total */}
-          <Row className="mb-1">
-            <Col md={{ span: 3, offset: 5 }} className="text-end">
-              <Form.Label column>Total:</Form.Label>
-            </Col>
-            <Col md={{ span: 4 }}>
-              <TotalField name="total" value={data.total} readOnly />
-            </Col>
-          </Row>
-        </Container>
-        {/* <textarea className="text-start" style={{ width: "100%", height: "250px", "marginTop": "10px" }} value={JSON.stringify(data, null, 2)} /> */}
-      </Form>
-    </React.Fragment>
+              {/* Taxes */}
+              <Row className="mb-1">
+                <Col md={{ span: 4 }} className="text-end">
+                  <Form.Label column>Taxes:</Form.Label>
+                </Col>
+                <Col md={{ span: 8 }}>
+                  <TotalField name="taxes" value={data.taxes} dispatch={dispatch} />
+                </Col>
+              </Row>
+
+              {/* Shipping */}
+              <Row className="mb-1">
+                <Col md={{ span: 4 }} className="text-end">
+                  <Form.Label column>Shipping:</Form.Label>
+                </Col>
+                <Col md={{ span: 8 }}>
+                  <TotalField name="shipping" value={data.shipping} dispatch={dispatch} />
+                </Col>
+              </Row>
+
+              {/* Total */}
+              <Row className="mb-1">
+                <Col md={{ span: 4 }} className="text-end">
+                  <Form.Label column>Total:</Form.Label>
+                </Col>
+                <Col md={{ span: 8 }}>
+                  <TotalField name="total" value={data.total} readOnly />
+                </Col>
+              </Row>
+              <Row className="mb-1">
+                <Col className="m-1 p-0">
+                  <Button variant="info" className="w-100" onClick={handleAddItem}>Add Items</Button>
+                </Col>
+                <Col className="m-1 p-0">
+                  <Button variant="secondary" className="w-100" onClick={handleReset}>Reset</Button>
+                </Col>
+                <Col className="m-1 p-0">
+                  <Button type="submit" variant="primary" className="w-100" onClick={handleSubmit}>Submit</Button>
+                </Col>
+              </Row>
+              {submitData && (<Row className="mb-3">
+                <Col>
+                  <textarea className='w-100' style={{height: "500px"}} value={JSON.stringify(submitData, null, 2)} />
+                </Col>
+              </Row>)}
+            </Container>
+          </Col>
+        </Row>
+      </Container>
+    </Form>
   );
 };
 

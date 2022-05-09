@@ -1,22 +1,29 @@
 import { InputGroup, FormControl } from 'react-bootstrap';
-import { useMemo } from 'react';
+import React from 'react';
 
 //  Using memoized components here helps a ton with uneccessary re-renders
-export const TotalField = ({
+export const TotalField = React.memo(({
   name,
   value,
-  onChange,
-  readOnly = false }) => useMemo(() => (<InputGroup>
+  dispatch,
+  readOnly = false }) => (<InputGroup>
     <InputGroup.Text>$</InputGroup.Text>
-    <FormControl className="text-end" value={value} name={name} onChange={onChange} readOnly={readOnly} />
-  </InputGroup>), [value, name, onChange, readOnly]);
+    <FormControl 
+      className="text-end" 
+      value={value} 
+      name={name} 
+      onChange={e => dispatch({ type: "COST_UPDATE", name, value: e.target.value})} 
+      readOnly={readOnly} />
+  </InputGroup>));
 
-export const InputField = ({
+export const InputField = React.memo(({
+  itemId,
   name,
   value,
-  onChange,
-  readOnly = false }) => {
-    console.log({name, value, onChange, readOnly})
-    return useMemo(() => (<FormControl name={name} value={value} onChange={onChange} readOnly={readOnly} />),
-      [name, onChange, value, readOnly]);
-  };
+  dispatch,
+  readOnly = false }) => (<FormControl
+    name={name}
+    value={value}
+    onChange={e => dispatch({ type: "ITEM_UPDATE", itemId, name, value: e.target.value })}
+    readOnly={readOnly} />)
+);

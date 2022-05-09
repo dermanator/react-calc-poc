@@ -9,16 +9,13 @@ function App() {
         <Row>
           <Col>
             <Card>
-              <Card.Header>Calculated Form No Framework</Card.Header>
+              <Card.Header>Example 1 - No 3rd Party Form Framework, Local State With Reducers</Card.Header>
               <Card.Body>
-                <Card.Text>
-                  <CalcFormNoFramework />
-                </Card.Text>
+                <CalcFormNoFramework />
               </Card.Body>
             </Card>
           </Col>
-          <Col>2 of 3</Col>
-          <Col>3 of 3</Col>
+          <Col>2 of 2</Col>
         </Row>
       </Container>
     </div> 
